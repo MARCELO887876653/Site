@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+  <meta charset="UTF-8">
+  <title>Status do Servidor Minecraft</title>
+  <style>
+    body {
+      background: #111;
+      color: #fff;
+      font-family: Arial, sans-serif;
+      text-align: center;
+      padding: 20px;
+    }
+    .card {
+      background: #1a1a1a;
+      padding: 25px;
+      border-radius: 12px;
+      width: 450px;
+      margin: auto;
+      box-shadow: 0 0 12px rgba(0,0,0,0.5);
+    }
+    h2 {
+      color: #00ff88;
+      margin-bottom: 10px;
+    }
+    .status-online { color: #00ff55; }
+    .status-offline { color: #ff4444; }
+    .info { margin: 8px 0; font-size: 17px; }
+  </style>
+</head>
+<body>
+
+  <div class="card">
+    <h2>Servidor Minecraft – Bedrock</h2>
+    <div id="status">Carregando...</div>
+  </div>
+
+<script>
+async function carregar() {
+  const url = "https://api.mcsrvstat.us/bedrock/2/enx-cirion-62.enx.host:10004";
+
+  try {
+    const req = await fetch(url);
+    const data = await req.json();
+
+    let html = "";
+
+    if (!data.online) {
+      html += `<p class='info status-offline'><b>🔴 Offline</b></p>`;
+    } else {
+      html += `<p class='info status-online'><b>🟢 Online</b></p>`;
+      html += `<p class='info'><b>IP:</b> enx-cirion-62.enx.host</p>`;
+      html += `<p class='info'><b>Porta:</b> 10004</p>`;
+      html += `<p class='info'><b>Versão:</b> ${data.version}</p>`;
+      html += `<p class='info'><b>Mapa:</b> ${data.map}</p>`;
+      html += `<p class='info'><b>Gamemode:</b> ${data.gamemode}</p>`;
+      html += `<p class='info'><b>Jogadores:</b> ${data.players.online} / ${data.players.max}</p>`;
+    }
+
+    document.getElementById("status").innerHTML = html;
+
+  } catch (e) {
+    document.getElementById("status").innerHTML =
+      "<p class='info status-offline'>Erro ao carregar 😢</p>";
+  }
+}
+
+carregar();
+setInterval(carregar, 5000);
+</script>
+
+</body>
+</html>
