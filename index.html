@@ -1,73 +1,136 @@
 <!DOCTYPE html>
-<html lang="pt">
+<html lang="pt-BR">
 <head>
-  <meta charset="UTF-8">
-  <title>Status do Servidor Minecraft</title>
-  <style>
-    body {
-      background: #111;
-      color: #fff;
-      font-family: Arial, sans-serif;
-      text-align: center;
-      padding: 20px;
-    }
-    .card {
-      background: #1a1a1a;
-      padding: 25px;
-      border-radius: 12px;
-      width: 450px;
-      margin: auto;
-      box-shadow: 0 0 12px rgba(0,0,0,0.5);
-    }
-    h2 {
-      color: #00ff88;
-      margin-bottom: 10px;
-    }
-    .status-online { color: #00ff55; }
-    .status-offline { color: #ff4444; }
-    .info { margin: 8px 0; font-size: 17px; }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pokémon Battle Online - 1v1</title>
+    <link rel="stylesheet" href="style.css">
 </head>
 <body>
+    <div class="container">
+        <!-- HOME SCREEN -->
+        <div id="homeScreen" class="screen active">
+            <div class="logo-section">
+                <img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/25.png" alt="Pokémon Battle">
+                <h1>⚡ POKÉMON BATTLE ONLINE ⚡</h1>
+                <p>Batalla contra tus amigos en épicas batallas 1v1</p>
+            </div>
+            <div class="home-buttons">
+                <button class="btn-primary" onclick="goToRooms()">
+                    🎮 JUGAR AHORA
+                </button>
+            </div>
+        </div>
 
-  <div class="card">
-    <h2>Servidor Minecraft – Bedrock</h2>
-    <div id="status">Carregando...</div>
-  </div>
+        <!-- ROOMS SCREEN -->
+        <div id="roomsScreen" class="screen">
+            <div class="rooms-header">
+                <h1>🎪 SALAS DE BATALLA</h1>
+                <p>Crea o únete a una sala para batirse</p>
+            </div>
 
-<script>
-async function carregar() {
-  const url = "https://api.mcsrvstat.us/bedrock/2/enx-cirion-62.enx.host:10004";
+            <div class="nav-buttons">
+                <button class="btn-secondary btn-small" onclick="goHome()">← Volver</button>
+            </div>
 
-  try {
-    const req = await fetch(url);
-    const data = await req.json();
+            <div class="create-room-form">
+                <h3>📋 Crear Nueva Sala</h3>
+                <div class="form-group">
+                    <input type="text" id="roomName" placeholder="Nombre de la sala" maxlength="20">
+                </div>
+                <button class="btn-primary" onclick="createRoom()" style="width: 100%;">
+                    ✨ CREAR SALA
+                </button>
+            </div>
 
-    let html = "";
+            <div id="roomsList"></div>
+        </div>
 
-    if (!data.online) {
-      html += `<p class='info status-offline'><b>🔴 Offline</b></p>`;
-    } else {
-      html += `<p class='info status-online'><b>🟢 Online</b></p>`;
-      html += `<p class='info'><b>IP:</b> enx-cirion-62.enx.host</p>`;
-      html += `<p class='info'><b>Porta:</b> 10004</p>`;
-      html += `<p class='info'><b>Versão:</b> ${data.version}</p>`;
-      html += `<p class='info'><b>Mapa:</b> ${data.map}</p>`;
-      html += `<p class='info'><b>Gamemode:</b> ${data.gamemode}</p>`;
-      html += `<p class='info'><b>Jogadores:</b> ${data.players.online} / ${data.players.max}</p>`;
-    }
+        <!-- SELECT POKEMON SCREEN -->
+        <div id="selectScreen" class="screen">
+            <div class="selection-header">
+                <h2>🎯 SELECCIONA TUS 3 POKÉMON</h2>
+            </div>
 
-    document.getElementById("status").innerHTML = html;
+            <div class="nav-buttons">
+                <button class="btn-secondary btn-small" onclick="goToRooms()">← Volver</button>
+            </div>
 
-  } catch (e) {
-    document.getElementById("status").innerHTML =
-      "<p class='info status-offline'>Erro ao carregar 😢</p>";
-  }
-}
+            <div id="roomInfo"></div>
+            <div class="selection-info">
+                ✋ Selecciona exactamente 3 Pokémon para la batalla
+            </div>
 
-carregar();
-setInterval(carregar, 5000);
-</script>
+            <div id="pokemonList"></div>
 
+            <button class="btn-primary" id="startBattle" onclick="startBattle()" disabled>
+                ⚡ INICIAR BATALLA
+            </button>
+        </div>
+
+        <!-- BATTLE SCREEN -->
+        <div id="battleScreen" class="screen">
+            <div class="battle-container">
+                <div class="battle-field">
+                    <!-- Player 1 -->
+                    <div class="player-battle">
+                        <h3 id="player1Name">Jugador 1</h3>
+                        <div class="pokemon-image">
+                            <img id="player1PokemonImg" src="https://via.placeholder.com/150" alt="Pokémon 1">
+                        </div>
+                        <div class="pokemon-info">
+                            <h4 id="player1PokemonName">Pokémon</h4>
+                            <div class="hp-bar">
+                                <div id="player1HP" style="width: 100%;"></div>
+                            </div>
+                            <p id="player1HPText">HP: 100/100</p>
+                        </div>
+                        <div id="player1Team" class="team-display"></div>
+                    </div>
+
+                    <!-- Player 2 -->
+                    <div class="player-battle">
+                        <h3 id="player2Name">Jugador 2</h3>
+                        <div class="pokemon-image">
+                            <img id="player2PokemonImg" src="https://via.placeholder.com/150" alt="Pokémon 2">
+                        </div>
+                        <div class="pokemon-info">
+                            <h4 id="player2PokemonName">Pokémon</h4>
+                            <div class="hp-bar">
+                                <div id="player2HP" style="width: 100%;"></div>
+                            </div>
+                            <p id="player2HPText">HP: 100/100</p>
+                        </div>
+                        <div id="player2Team" class="team-display"></div>
+                    </div>
+                </div>
+
+                <!-- Battle Log -->
+                <div class="battle-log" id="battleLog"></div>
+
+                <!-- Moves -->
+                <div>
+                    <h3 style="margin-bottom: 15px; color: #333;">🎯 TUS MOVIMIENTOS</h3>
+                    <div id="movesList"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- RESULT SCREEN -->
+        <div id="resultScreen">
+            <div class="result-box">
+                <h2 id="resultTitle">¡Ganaste!</h2>
+                <p id="resultMessage">Puntuación: 3 - 0</p>
+                <button class="btn-primary" onclick="goToRooms()">
+                    🔄 Jugar Nuevamente
+                </button>
+                <button class="btn-secondary" onclick="goHome()">
+                    🏠 Menú Principal
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script src="app.js"></script>
 </body>
 </html>
